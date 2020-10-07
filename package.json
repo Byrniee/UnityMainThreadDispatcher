@@ -1,0 +1,8 @@
+{
+  "name": "com.byrniee.unitymainthreaddispatcher",
+  "description": "Main thread dispatcher for unity, with abstraction.",
+  "version": "1.0.0",
+  "unity": "2019.4",
+  "displayName": "UnityMainThreadDispatcher",
+  "type": "library"
+}
