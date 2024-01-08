@@ -1,42 +1,48 @@
 using UnityEngine;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Byrniee.UnityMainThreadDispatcher.Internal
 {
     /// <summary>
-    /// Implementaion for the Unity main thread dispatcher.
+    /// Implementation for the Unity main thread dispatcher.
     /// </summary>
     public class MainThreadDispatcher : MonoBehaviour, IMainThreadDispatcher
     {
-        private Queue<Action> actionQueue = new Queue<Action>();
-        private readonly object queueLock = new object();
+        private readonly ConcurrentQueue<Action> actionQueue = new ConcurrentQueue<Action>();
 
         /// <inheritdoc />
         public void Enqueue(Action action)
         {
-            lock (queueLock)
+            actionQueue.Enqueue(action);
+        }
+
+        /// <inheritdoc />
+        public Task EnqueueAndWaitAsync(Action action, CancellationToken cancellationToken = default)
+        {
+            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            Enqueue(() =>
             {
-                actionQueue.Enqueue(action);
-            }
+                cancellationToken.ThrowIfCancellationRequested();
+                action?.Invoke();
+                tcs.TrySetResult(false);
+            });
+
+            return tcs.Task;
         }
 
         private void Update()
         {
             while (true)
             {
-                Action action = null;
-
-                lock (queueLock)
+                if (!actionQueue.TryDequeue(out Action action))
                 {
-                    if (actionQueue.Count == 0)
-                    {
-                        return;
-                    }
-                    
-                    action = actionQueue.Dequeue();
+                    return;
                 }
-
+                
                 action?.Invoke();
             }
         }
