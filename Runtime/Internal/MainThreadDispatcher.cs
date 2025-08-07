@@ -1,9 +1,8 @@
-using UnityEngine;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Byrniee.UnityMainThreadDispatcher.Internal
 {
@@ -26,9 +25,16 @@ namespace Byrniee.UnityMainThreadDispatcher.Internal
             TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
             Enqueue(() =>
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                action?.Invoke();
-                tcs.TrySetResult(false);
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    action?.Invoke();
+                    tcs.TrySetResult(false);
+                }
+                catch (Exception e)
+                {
+                    tcs.TrySetException(e);
+                }
             });
 
             return tcs.Task;
@@ -42,7 +48,7 @@ namespace Byrniee.UnityMainThreadDispatcher.Internal
                 {
                     return;
                 }
-                
+
                 action?.Invoke();
             }
         }

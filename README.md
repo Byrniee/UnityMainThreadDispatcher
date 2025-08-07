@@ -7,5 +7,5 @@ Add the package to your manifest.json file located under the Packages folder.
 
 ```
   "dependencies": {
-    "com.byrniee.unitymainthreaddispatcher": "git@github.com:Byrniee/UnityMainThreadDispatcher.git#1.0.0",
+    "com.byrniee.unitymainthreaddispatcher": "git@github.com:Byrniee/UnityMainThreadDispatcher.git#1.2.0",
 ```
